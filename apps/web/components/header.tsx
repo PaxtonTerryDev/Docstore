@@ -1,5 +1,4 @@
 import Link from "next/link"
-import { FileText } from "lucide-react"
 import { getUser } from "@/lib/session"
 import { LogoutButton } from "@/components/logout-button"
 
@@ -8,23 +7,21 @@ export async function Header() {
   if (!user) return null
 
   return (
-    <header className="border-b bg-card">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-4 sm:px-8">
-        <Link href="/" className="flex items-center gap-3 font-heading text-2xl font-semibold">
-          <span className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <FileText className="size-6" aria-hidden />
-          </span>
+    <header className="bg-[oklch(0.36_0.03_255)] text-white">
+      <div className="bg-[oklch(0.3_0.03_255)] py-1 text-[11px] font-semibold">
+        <div className="mx-auto max-w-6xl px-6 sm:px-8">An Official Website of Utah County Government</div>
+      </div>
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-3 sm:px-8">
+        <Link href="/" className="font-heading text-2xl">
           DocStore
         </Link>
-        <nav aria-label="Main" className="flex flex-wrap items-center gap-4 text-base">
+        <nav aria-label="Main" className="flex flex-wrap items-center gap-6 text-sm">
           {user.role === "admin" && (
-            <Link href="/audit" className="rounded-lg px-3 py-2 font-medium hover:bg-muted">
+            <Link href="/audit" className="hover:underline">
               Activity log
             </Link>
           )}
-          <span className="text-muted-foreground">
-            Signed in as <span className="font-medium text-foreground">{user.name}</span>
-          </span>
+          <span className="text-white/70">{user.name}</span>
           <LogoutButton />
         </nav>
       </div>

@@ -1,11 +1,11 @@
-import { Geist, Geist_Mono, Inter, Noto_Serif } from "next/font/google"
+import { Geist, Geist_Mono, Inter, EB_Garamond } from "next/font/google"
 
 import "@workspace/ui/globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Header } from "@/components/header"
 import { cn } from "@workspace/ui/lib/utils";
 
-const notoSerifHeading = Noto_Serif({subsets:['latin'],variable:'--font-heading'});
+const notoSerifHeading = EB_Garamond({subsets:['latin'],variable:'--font-heading'});
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'})
 

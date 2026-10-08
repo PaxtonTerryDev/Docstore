@@ -52,15 +52,15 @@ export default async function Page({
   const counts = new Map(byType.map((r) => [r.docType, r.n]))
 
   const stats = [
-    { label: "Documents stored", value: totals!.total, icon: Files, tint: "bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-200" },
-    { label: "Added this week", value: totals!.week, icon: Clock, tint: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200" },
-    { label: "Storage used", value: formatSize(Number(totals!.bytes)), icon: HardDrive, tint: "bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-200" },
-    { label: "Added by you", value: totals!.mine, icon: UserRound, tint: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200" },
+    { label: "Documents stored", value: totals!.total, icon: Files },
+    { label: "Added this week", value: totals!.week, icon: Clock },
+    { label: "Storage used", value: formatSize(Number(totals!.bytes)), icon: HardDrive },
+    { label: "Added by you", value: totals!.mine, icon: UserRound },
   ]
 
   return (
     <main className="mx-auto flex max-w-6xl flex-col gap-8 p-6 sm:p-8">
-      <div className="flex flex-wrap items-center justify-between gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-3xl font-semibold">Welcome back, {user.name.split(" ")[0]}</h1>
           <p className="mt-1 text-lg text-muted-foreground">Find a recorded document, or add a new one.</p>
@@ -69,15 +69,13 @@ export default async function Page({
       </div>
 
       <section aria-label="Summary" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((s, i) => (
+        {stats.map((s) => (
           <Card
             key={s.label}
-            style={{ animationDelay: `${i * 80}ms` }}
-            className="animate-in fade-in slide-in-from-bottom-3 duration-500 fill-mode-both"
           >
             <CardContent className="flex items-center gap-4">
-              <span className={`flex size-14 shrink-0 items-center justify-center rounded-xl ${s.tint}`}>
-                <s.icon className="size-7" aria-hidden />
+              <span className="flex size-10 shrink-0 items-center justify-center bg-secondary text-primary">
+                <s.icon className="size-5" aria-hidden />
               </span>
               <div>
                 <p className="text-3xl font-semibold tabular-nums">{s.value}</p>
@@ -88,7 +86,7 @@ export default async function Page({
         ))}
       </section>
 
-      <Card aria-label="Search" className="animate-in fade-in duration-700">
+      <Card aria-label="Search">
         <CardContent className="flex flex-col gap-4">
           <form className="flex flex-wrap items-end gap-4">
             <div className="flex min-w-64 flex-1 flex-col gap-2">
@@ -121,13 +119,13 @@ export default async function Page({
           </form>
           <div className="flex flex-wrap gap-2" aria-label="Browse by type">
             {docTypes.map((t) => (
-              <Link
+              <Badge
                 key={t.value}
-                href={`/?type=${t.value}`}
-                className={`rounded-full px-4 py-2 text-base font-medium transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/40 ${t.badge} ${type === t.value ? "ring-2 ring-foreground" : ""}`}
+                variant={type === t.value ? "default" : "outline"}
+                render={<Link href={`/?type=${t.value}`} />}
               >
                 {t.label} · {counts.get(t.value) ?? 0}
-              </Link>
+              </Badge>
             ))}
           </div>
         </CardContent>
@@ -166,7 +164,7 @@ export default async function Page({
                   <TableRow key={d.id}>
                     <TableCell className="font-mono font-medium">{d.instrumentNumber}</TableCell>
                     <TableCell>
-                      <Badge className={t.badge}>{t.label}</Badge>
+                      <Badge variant="secondary">{t.label}</Badge>
                     </TableCell>
                     <TableCell>
                       {d.book ?? "—"} / {d.page ?? "—"}

@@ -30,14 +30,14 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
   ]
 
   return (
-    <main className="mx-auto flex max-w-6xl flex-col gap-6 p-6 sm:p-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      <Link href="/" className="inline-flex w-fit items-center gap-2 rounded-lg py-2 pr-3 text-lg font-medium text-primary hover:underline">
+    <main className="mx-auto flex max-w-6xl flex-col gap-6 p-6 sm:p-8">
+      <Link href="/" className="inline-flex w-fit items-center gap-2 py-2 pr-3 font-medium text-primary hover:underline">
         <ArrowLeft className="size-5" aria-hidden /> Back to all documents
       </Link>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="font-heading text-3xl font-semibold">{t.label} {doc.instrumentNumber}</h1>
-          <Badge className={t.badge}>{t.label}</Badge>
+          <Badge variant="secondary">{t.label}</Badge>
         </div>
         <Button nativeButton={false} render={<a href={`/api/documents/${doc.id}/download`} />}>
           <Download /> Download

@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { FileText } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import { Card } from "@workspace/ui/components/card"
 import { Input } from "@workspace/ui/components/input"
@@ -30,15 +29,10 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-svh items-center justify-center p-6">
-      <Card className="w-full max-w-md animate-in fade-in zoom-in-95 duration-500">
+      <Card className="w-full max-w-md">
       <form onSubmit={submit} className="flex flex-col gap-5 px-8 py-4">
-        <div className="flex items-center gap-3">
-          <span className="flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <FileText className="size-7" aria-hidden />
-          </span>
-          <h1 className="font-heading text-3xl font-semibold">DocStore</h1>
-        </div>
-        <p className="text-lg text-muted-foreground">Sign in to find and manage recorded documents.</p>
+        <h1 className="font-heading text-3xl font-semibold">DocStore</h1>
+        <p className="text-muted-foreground">Sign in to find and manage recorded documents.</p>
         <div className="flex flex-col gap-2">
           <Label htmlFor="email">Email address</Label>
           <Input id="email" name="email" type="email" autoComplete="username" required />

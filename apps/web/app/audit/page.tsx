@@ -9,12 +9,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { getUser } from "@/lib/session"
 
 const actions = ["upload", "view", "download", "search"] as const
-const badge: Record<string, string> = {
-  upload: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
-  view: "bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200",
-  download: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
-  search: "bg-violet-100 text-violet-900 dark:bg-violet-950 dark:text-violet-200",
-}
 
 export default async function AuditPage({
   searchParams,
@@ -52,7 +46,7 @@ export default async function AuditPage({
     .limit(200)
 
   return (
-    <main className="mx-auto flex max-w-6xl flex-col gap-6 p-6 sm:p-8 animate-in fade-in duration-500">
+    <main className="mx-auto flex max-w-6xl flex-col gap-6 p-6 sm:p-8">
       <div>
         <h1 className="font-heading text-3xl font-semibold">Activity log</h1>
         <p className="mt-1 text-lg text-muted-foreground">Every upload, view, download and search, newest first.</p>
@@ -99,7 +93,7 @@ export default async function AuditPage({
                 <TableCell className="whitespace-nowrap text-muted-foreground">{r.at.toLocaleString()}</TableCell>
                 <TableCell>{r.email}</TableCell>
                 <TableCell>
-                  <Badge className={`capitalize ${badge[r.action]}`}>{r.action}</Badge>
+                  <Badge variant="secondary" className="capitalize">{r.action}</Badge>
                 </TableCell>
                 <TableCell>
                   {r.documentId ? (
