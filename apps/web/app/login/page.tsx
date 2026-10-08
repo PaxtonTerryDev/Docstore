@@ -4,8 +4,9 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { FileText } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
-
-const field = "h-12 w-full rounded-lg border-2 bg-background px-4 text-base focus-visible:border-ring focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/30"
+import { Card } from "@workspace/ui/components/card"
+import { Input } from "@workspace/ui/components/input"
+import { Label } from "@workspace/ui/components/label"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -29,7 +30,8 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-svh items-center justify-center p-6">
-      <form onSubmit={submit} className="flex w-full max-w-md flex-col gap-5 rounded-2xl border bg-card p-8 shadow-lg animate-in fade-in zoom-in-95 duration-500">
+      <Card className="w-full max-w-md animate-in fade-in zoom-in-95 duration-500">
+      <form onSubmit={submit} className="flex flex-col gap-5 px-8 py-4">
         <div className="flex items-center gap-3">
           <span className="flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
             <FileText className="size-7" aria-hidden />
@@ -37,17 +39,18 @@ export default function LoginPage() {
           <h1 className="font-heading text-3xl font-semibold">DocStore</h1>
         </div>
         <p className="text-lg text-muted-foreground">Sign in to find and manage recorded documents.</p>
-        <label className="flex flex-col gap-2 text-base font-medium">
-          Email address
-          <input name="email" type="email" autoComplete="username" required className={field} />
-        </label>
-        <label className="flex flex-col gap-2 text-base font-medium">
-          Password
-          <input name="password" type="password" autoComplete="current-password" required className={field} />
-        </label>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="email">Email address</Label>
+          <Input id="email" name="email" type="email" autoComplete="username" required />
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="password">Password</Label>
+          <Input id="password" name="password" type="password" autoComplete="current-password" required />
+        </div>
         <p role="alert" className="min-h-6 text-base font-medium text-destructive">{error}</p>
-        <Button type="submit" size="lg">Sign in</Button>
+        <Button type="submit">Sign in</Button>
       </form>
+      </Card>
     </div>
   )
 }

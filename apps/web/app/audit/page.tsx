@@ -1,11 +1,14 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { and, auditLog, db, desc, documents, eq, users } from "@workspace/db"
+import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
+import { Card } from "@workspace/ui/components/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@workspace/ui/components/table"
 import { getUser } from "@/lib/session"
 
 const actions = ["upload", "view", "download", "search"] as const
-const field = "h-12 rounded-lg border-2 bg-background px-4 text-base focus-visible:border-ring focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/30"
 const badge: Record<string, string> = {
   upload: "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200",
   view: "bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200",
@@ -23,6 +26,8 @@ export default async function AuditPage({
 
   const { action, user } = await searchParams
   const allUsers = await db.select({ id: users.id, email: users.email }).from(users)
+  const actionItems = [{ value: "", label: "All actions" }, ...actions.map((a) => ({ value: a, label: a[0]!.toUpperCase() + a.slice(1) }))]
+  const userItems = [{ value: "", label: "All users" }, ...allUsers.map((u) => ({ value: u.id, label: u.email }))]
   const rows = await db
     .select({
       at: auditLog.at,
@@ -54,47 +59,49 @@ export default async function AuditPage({
       </div>
 
       <form className="flex flex-wrap gap-3">
-        <select name="action" defaultValue={action ?? ""} className={field}>
-          <option value="">All actions</option>
-          {actions.map((a) => (
-            <option key={a} value={a}>{a[0]!.toUpperCase() + a.slice(1)}</option>
-          ))}
-        </select>
-        <select name="user" defaultValue={user ?? ""} className={field}>
-          <option value="">All users</option>
-          {allUsers.map((u) => (
-            <option key={u.id} value={u.id}>
-              {u.email}
-            </option>
-          ))}
-        </select>
-        <Button type="submit" size="lg">Filter</Button>
+        <Select name="action" defaultValue={action ?? ""} items={actionItems}>
+          <SelectTrigger className="w-40">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {actionItems.map((a) => (
+              <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select name="user" defaultValue={user ?? ""} items={userItems}>
+          <SelectTrigger className="w-64">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {userItems.map((u) => (
+              <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button type="submit">Filter</Button>
       </form>
 
-      <div className="overflow-x-auto rounded-2xl border bg-card shadow-sm">
-        <table className="w-full text-base">
-          <thead className="bg-muted/50 text-left text-muted-foreground">
-            <tr>
-              <th scope="col" className="px-5 py-3 font-medium">Time</th>
-              <th scope="col" className="px-5 py-3 font-medium">User</th>
-              <th scope="col" className="px-5 py-3 font-medium">Action</th>
-              <th scope="col" className="px-5 py-3 font-medium">Target</th>
-              <th scope="col" className="px-5 py-3 font-medium">IP</th>
-            </tr>
-          </thead>
-          <tbody>
+      <Card>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Time</TableHead>
+              <TableHead>User</TableHead>
+              <TableHead>Action</TableHead>
+              <TableHead>Target</TableHead>
+              <TableHead>IP</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {rows.map((r, i) => (
-              <tr key={i} className="border-t transition-colors hover:bg-muted/40">
-                <td className="px-5 py-3 whitespace-nowrap text-muted-foreground">
-                  {r.at.toLocaleString()}
-                </td>
-                <td className="px-5 py-3">{r.email}</td>
-                <td className="px-5 py-3">
-                  <span className={`rounded-full px-3 py-1 text-sm font-medium capitalize ${badge[r.action]}`}>
-                    {r.action}
-                  </span>
-                </td>
-                <td className="px-5 py-3">
+              <TableRow key={i}>
+                <TableCell className="whitespace-nowrap text-muted-foreground">{r.at.toLocaleString()}</TableCell>
+                <TableCell>{r.email}</TableCell>
+                <TableCell>
+                  <Badge className={`capitalize ${badge[r.action]}`}>{r.action}</Badge>
+                </TableCell>
+                <TableCell>
                   {r.documentId ? (
                     <Link href={`/documents/${r.documentId}`} className="hover:underline">
                       <span className="font-mono">{r.instrument}</span>{" "}
@@ -103,20 +110,20 @@ export default async function AuditPage({
                   ) : (
                     <span className="text-muted-foreground">{r.detail}</span>
                   )}
-                </td>
-                <td className="px-5 py-3 font-mono text-muted-foreground">{r.ip}</td>
-              </tr>
+                </TableCell>
+                <TableCell className="font-mono text-muted-foreground">{r.ip}</TableCell>
+              </TableRow>
             ))}
             {rows.length === 0 && (
-              <tr>
-                <td colSpan={5} className="p-8 text-center text-muted-foreground">
+              <TableRow>
+                <TableCell colSpan={5} className="p-8 text-center text-muted-foreground">
                   No activity yet
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             )}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+      </Card>
     </main>
   )
 }
