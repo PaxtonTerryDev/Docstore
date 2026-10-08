@@ -96,7 +96,7 @@ SESSION_SECRET=
 - The compose file uses 4 volumes (`rustfs{0...3}`) for erasure coding; on a single physical disk RustFS refuses to start, so `RUSTFS_UNSAFE_BYPASS_DISK_CHECK=true` is set (confirmed required).
 - Add a one-shot init service (e.g. `minio/mc` or an AWS CLI container) that creates the `docstore` bucket and a dedicated app access key, so a fresh `docker compose up` works.
 - Presigned URLs embed the host in the signature, so presign with `S3_PUBLIC_ENDPOINT` (a second S3 client configured with that endpoint), not the internal `rustfs:9000`.
-- Browser PUT/GET needs CORS on the S3 API (not just the console). `RUSTFS_CONSOLE_CORS_ALLOWED_ORIGINS` only covers the console. Verify RustFS's mechanism for S3 CORS (env var or `PutBucketCors`) during milestone 1.
+- Browser PUT/GET needs CORS on the S3 API (not the console env var). Confirmed: RustFS supports `PutBucketCors`; `bucket-init` applies it. `packages/storage/scripts/cors.ts` does the same from Node.
 - Console on `:9001` serves as the admin UI for the demo.
 
 ## Stages
@@ -119,19 +119,19 @@ Each stage ends with a check you can run before moving on. Priority is a polishe
 - `packages/db`: Drizzle schema, migrations, seed script (users + sample documents rows).
 - **Test:** migrate + seed run clean; rows visible in `psql`.
 
-### Stage 5 — Upload flow
+### Stage 5 — Upload flow ✅
 - `POST /api/documents`, `/complete`, upload dialog.
 - **Test:** upload a PDF from the UI; row is `ready`; object appears in the RustFS console.
 
-### Stage 6 — List, search, view, download
+### Stage 6 — List, search, view, download ✅
 - Documents table with filters, detail page with inline preview, download button.
 - **Test:** search by instrument number and type returns expected rows; PDF and image preview render; download saves the original file.
 
-### Stage 7 — Auth
+### Stage 7 — Auth ✅
 - Login page, session cookie, route guard, seeded `admin` and `user`.
 - **Test:** unauthenticated visit redirects to `/login`; both seeded users can sign in; only `admin` sees `/audit`.
 
-### Stage 8 — Audit log
+### Stage 8 — Audit log ✅
 - Write entries on upload/view/download/search; audit page with filters.
 - **Test:** perform each action, confirm one matching row appears in `/audit` with the right user and document.
 
@@ -151,6 +151,6 @@ Each stage ends with a check you can run before moving on. Priority is a polishe
 ## Open questions
 
 - RustFS version/maturity and Object Lock support (for the production pitch).
-- How S3 CORS is configured in RustFS.
+- ~~How S3 CORS is configured in RustFS~~ — resolved: standard PutBucketCors.
 - For production: where RustFS gets deployed (Rancher) and with what disk topology.
 - Real document types / metadata fields used by the Recorder's office.

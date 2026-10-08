@@ -1,4 +1,4 @@
-import { deleteObject, headObject, presignGet, presignPut, putObject } from "../src/index.js"
+import { deleteObject, headObject, presignGet, presignPut, putObject } from "../src/index"
 
 const key = `smoke/${Date.now()}.txt`
 const text = "hello docstore"

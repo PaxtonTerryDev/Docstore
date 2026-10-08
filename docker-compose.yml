@@ -70,7 +70,11 @@ services:
       AWS_DEFAULT_REGION: us-east-1
     entrypoint: ["sh", "-c"]
     command:
-      - aws --endpoint-url http://rustfs:9000 s3api head-bucket --bucket ${S3_BUCKET:-docstore} 2>/dev/null || aws --endpoint-url http://rustfs:9000 s3api create-bucket --bucket ${S3_BUCKET:-docstore}
+      - |
+        E="aws --endpoint-url http://rustfs:9000"
+        B=${S3_BUCKET:-docstore}
+        $$E s3api head-bucket --bucket $$B 2>/dev/null || $$E s3api create-bucket --bucket $$B
+        $$E s3api put-bucket-cors --bucket $$B --cors-configuration '{"CORSRules":[{"AllowedOrigins":["*"],"AllowedMethods":["GET","PUT","HEAD"],"AllowedHeaders":["*"],"ExposeHeaders":["ETag","Content-Disposition"],"MaxAgeSeconds":3000}]}'
     restart: "no"
 
 volumes:
