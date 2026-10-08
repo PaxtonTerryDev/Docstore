@@ -135,7 +135,7 @@ Each stage ends with a check you can run before moving on. Priority is a polishe
 - Write entries on upload/view/download/search; audit page with filters.
 - **Test:** perform each action, confirm one matching row appears in `/audit` with the right user and document.
 
-### Stage 9 — Demo polish
+### Stage 9 — Demo polish ✅
 - Visual pass (layout, empty/loading states, dashboard stats, animations), seed realistic sample documents, README run steps.
 - **Test:** from a clean checkout, `docker compose up` + seed + `npm run dev` yields a ready-to-demo app.
 

@@ -8,7 +8,7 @@ export function LogoutButton() {
   return (
     <Button
       variant="outline"
-      size="sm"
+      size="default"
       onClick={async () => {
         await fetch("/api/logout", { method: "POST" })
         router.push("/login")

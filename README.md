@@ -1,21 +1,25 @@
-# shadcn/ui monorepo template
+# DocStore
 
-This is a Next.js monorepo template with shadcn/ui.
+Document upload and storage proof of concept. Next.js + Postgres + RustFS (S3-compatible). Files go straight from the browser to RustFS via presigned URLs.
 
-## Adding components
-
-To add components to your app, run the following command at the root of your `web` app:
+## Run
 
 ```bash
-pnpm dlx shadcn@latest add button -c apps/web
+cp .env.example .env
+npm install
+docker compose up -d
+npm run migrate -w @workspace/db
+npm run seed -w @workspace/db
+npm run dev
 ```
 
-This will place the ui components in the `packages/ui/src/components` directory.
+Open http://localhost:3000
 
-## Using components
+| Account | Email | Password |
+| --- | --- | --- |
+| Admin (sees the Activity log) | admin@docstore.local | admin123 |
+| User | user@docstore.local | user123 |
 
-To use the components in your app, import them from the `ui` package.
+RustFS console: http://localhost:9001 (docstoreadmin / docstoreadmin)
 
-```tsx
-import { Button } from "@workspace/ui/components/button";
-```
+`seed` resets users, documents and the activity log, and uploads 30 sample PDFs to RustFS.

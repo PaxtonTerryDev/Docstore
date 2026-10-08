@@ -8,19 +8,22 @@ export async function Header() {
   if (!user) return null
 
   return (
-    <header className="border-b">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-8 py-3">
-        <Link href="/" className="flex items-center gap-2 font-heading text-lg font-medium">
-          <FileText className="size-5" /> DocStore
+    <header className="border-b bg-card">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-4 sm:px-8">
+        <Link href="/" className="flex items-center gap-3 font-heading text-2xl font-semibold">
+          <span className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+            <FileText className="size-6" aria-hidden />
+          </span>
+          DocStore
         </Link>
-        <nav className="flex items-center gap-4 text-sm">
+        <nav aria-label="Main" className="flex flex-wrap items-center gap-4 text-base">
           {user.role === "admin" && (
-            <Link href="/audit" className="text-muted-foreground hover:text-foreground">
-              Audit log
+            <Link href="/audit" className="rounded-lg px-3 py-2 font-medium hover:bg-muted">
+              Activity log
             </Link>
           )}
           <span className="text-muted-foreground">
-            {user.name} · {user.role}
+            Signed in as <span className="font-medium text-foreground">{user.name}</span>
           </span>
           <LogoutButton />
         </nav>
