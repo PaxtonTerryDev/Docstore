@@ -1,8 +1,7 @@
 import {
   bigint,
   boolean,
-  date,
-  integer,
+  jsonb,
   pgTable,
   text,
   timestamp,
@@ -17,6 +16,7 @@ export const users = pgTable("users", {
   role: text("role", { enum: ["admin", "user"] })
     .notNull()
     .default("user"),
+  department: text("department").notNull().default("recorder"),
 })
 
 export const sessions = pgTable("sessions", {
@@ -35,10 +35,8 @@ export const documents = pgTable("documents", {
   objectKey: text("object_key").notNull().unique(),
   sha256: text("sha256"),
   docType: text("doc_type").notNull(),
-  instrumentNumber: text("instrument_number"),
-  book: text("book"),
-  page: integer("page"),
-  recordedDate: date("recorded_date"),
+  department: text("department").notNull().default("recorder"),
+  metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
   status: text("status", { enum: ["pending", "ready"] })
     .notNull()
     .default("pending"),

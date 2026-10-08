@@ -37,7 +37,7 @@ export default async function AuditPage({
       detail: auditLog.detail,
       email: users.email,
       documentId: auditLog.documentId,
-      instrument: documents.instrumentNumber,
+      instrument: sqlTag<string | null>`coalesce(${documents.metadata}->>'instrumentNumber', ${documents.metadata}->>'caseNumber')`,
       filename: documents.filename,
     })
     .from(auditLog)

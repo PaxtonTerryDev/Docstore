@@ -11,7 +11,7 @@ import { pageHref } from "@/lib/pagination"
 
 type Item = { value: string; label: string }
 
-export function SearchForm({ q = "", type = "", types }: { q?: string; type?: string; types: Item[] }) {
+export function SearchForm({ q = "", type = "", types, label }: { q?: string; type?: string; types: Item[]; label: string }) {
   const router = useRouter()
   const [text, setText] = useState(q)
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
@@ -26,13 +26,12 @@ export function SearchForm({ q = "", type = "", types }: { q?: string; type?: st
   return (
     <form onSubmit={(e) => e.preventDefault()} className="flex flex-wrap items-end gap-4">
       <div className="flex min-w-64 flex-1 flex-col gap-2">
-        <Label htmlFor="q">Instrument number</Label>
+        <Label htmlFor="q">{label}</Label>
         <Input
           id="q"
           name="q"
           value={text}
-          placeholder="For example 2026000107"
-          onChange={(e) => {
+                    onChange={(e) => {
             const value = e.target.value
             setText(value)
             clearTimeout(timer.current)

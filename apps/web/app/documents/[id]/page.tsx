@@ -5,7 +5,8 @@ import { audit } from "@/lib/audit"
 import { canView } from "@/lib/access"
 import { RestrictButton } from "@/components/restrict-button"
 import { requireUser } from "@/lib/session"
-import { formatDate, formatSize, typeInfo } from "@/lib/doc-types"
+import { formatSize } from "@/lib/doc-types"
+import { fieldValue, getDepartment, typeLabel } from "@/lib/departments"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import { Card, CardContent } from "@workspace/ui/components/card"
@@ -26,12 +27,11 @@ export default async function DocumentPage({
   const url = await presignGet(doc.objectKey)
   const isPdf = doc.contentType === "application/pdf"
   const isImage = doc.contentType.startsWith("image/")
-  const t = typeInfo(doc.docType)
+  const dept = getDepartment(doc.department)
+  const label = typeLabel(dept, doc.docType)
 
   const meta: [string, string][] = [
-    ["Instrument number", doc.instrumentNumber ?? "—"],
-    ["Book / Page", `${doc.book ?? "—"} / ${doc.page ?? "—"}`],
-    ["Date recorded", formatDate(doc.recordedDate)],
+    ...dept.fields.map((f): [string, string] => [f.label, fieldValue(f, doc.metadata[f.key])]),
     ["File size", formatSize(doc.sizeBytes)],
   ]
 
@@ -46,9 +46,9 @@ export default async function DocumentPage({
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="font-heading text-3xl font-semibold">
-            {t.label} {doc.instrumentNumber}
+            {label} {String(doc.metadata[dept.idField] ?? "")}
           </h1>
-          <Badge variant="secondary">{t.label}</Badge>
+          <Badge variant="secondary">{label}</Badge>
           {doc.restricted && <Badge variant="outline">Restricted</Badge>}
         </div>
         <div className="flex gap-2">

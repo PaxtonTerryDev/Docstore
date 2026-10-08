@@ -1,12 +1,14 @@
 import { randomUUID } from "node:crypto"
 import { db, documents } from "@workspace/db"
 import { presignPut } from "@workspace/storage"
+import { getDepartment } from "@/lib/departments"
 import { getUser } from "@/lib/session"
 
 export async function POST(req: Request) {
   const body = await req.json()
   const uploader = await getUser()
   if (!uploader) return Response.json({ error: "unauthorized" }, { status: 401 })
+  const dept = getDepartment(uploader.department)
   const id = randomUUID()
   const objectKey = `${id}/${body.filename}`
 
@@ -17,10 +19,8 @@ export async function POST(req: Request) {
     sizeBytes: body.sizeBytes,
     objectKey,
     docType: body.docType,
-    instrumentNumber: body.instrumentNumber,
-    book: body.book || null,
-    page: Number.parseInt(body.page) || null,
-    recordedDate: body.recordedDate || null,
+    department: dept.id,
+    metadata: Object.fromEntries(dept.fields.map((f) => [f.key, body.metadata?.[f.key] || null])),
     restricted: Boolean(body.restricted),
     uploadedBy: uploader.id,
   })

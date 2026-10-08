@@ -33,11 +33,12 @@ await db.delete(documents)
 await db.delete(sessions)
 await db.delete(users)
 
-const [admin, user] = await db
+const [admin, user, cjcUser] = await db
   .insert(users)
   .values([
     { email: "admin@docstore.local", name: "Alex Admin", role: "admin", passwordHash: hashPassword("admin123") },
     { email: "user@docstore.local", name: "Uma User", role: "user", passwordHash: hashPassword("user123") },
+    { email: "cjc@docstore.local", name: "Casey CJC", department: "cjc", passwordHash: hashPassword("cjc123") },
   ])
   .returning()
 
@@ -93,17 +94,57 @@ const rows = await Promise.all(
       sizeBytes: body.length,
       objectKey,
       docType,
-      instrumentNumber: instrument,
-      book,
-      page,
-      recordedDate: recorded,
+      metadata: { instrumentNumber: instrument, book, page, recordedDate: recorded },
       status: "ready" as const,
       uploadedBy: i % 3 === 0 ? admin!.id : user!.id,
       createdAt: date,
     }
   })
 )
-const inserted = await db.insert(documents).values(rows).returning()
+const cjcTypes: Record<string, string> = {
+  referral: "PROGRAM REFERRAL",
+  assessment: "RISK ASSESSMENT",
+  "court-order": "ORDER OF THE COURT",
+  report: "PROGRESS REPORT",
+}
+const programs = ["Drug court", "Mental health court", "Pretrial services"]
+const managers = ["R. Delgado", "S. Whitfield", "M. Tanaka"]
+
+const cjcRows = await Promise.all(
+  Array.from({ length: 12 }, async (_, i) => {
+    const docType = Object.keys(cjcTypes)[i % 4]!
+    const caseNumber = `CJC-26-${String(400 + i * 3).padStart(4, "0")}`
+    const date = new Date(Date.now() - (i * 3 + 1) * day)
+    const hearing = new Date(Date.now() + (i + 2) * 3 * day).toISOString().slice(0, 10)
+    const body = pdf([
+      cjcTypes[docType]!,
+      "Utah County Criminal Justice Coordinating Council",
+      "",
+      `Case No.  ${caseNumber}`,
+      `Program:  ${programs[i % 3]}`,
+      `Case manager:  ${managers[i % 3]}`,
+      `Next hearing:  ${hearing}`,
+      "",
+      "Sample document generated for the DocStore demo.",
+    ])
+    const filename = `${docType}-${caseNumber}.pdf`
+    const objectKey = `seed/${caseNumber}/${filename}`
+    await putObject(objectKey, body, "application/pdf")
+    return {
+      filename,
+      contentType: "application/pdf",
+      sizeBytes: body.length,
+      objectKey,
+      docType,
+      department: "cjc",
+      metadata: { caseNumber, program: programs[i % 3], caseManager: managers[i % 3], hearingDate: hearing },
+      status: "ready" as const,
+      uploadedBy: cjcUser!.id,
+      createdAt: date,
+    }
+  })
+)
+const inserted = await db.insert(documents).values([...rows, ...cjcRows]).returning()
 
 const events: (typeof auditLog.$inferInsert)[] = inserted.slice(0, 12).flatMap((d, i) => [
   { userId: user!.id, action: "view" as const, documentId: d.id, ip: "10.0.4.21", at: new Date(Date.now() - i * 3_600_000 * 2) },
@@ -123,4 +164,4 @@ events.push(
 await db.insert(auditLog).values(events)
 
 await sql.end()
-console.log("seeded", rows.length, "documents,", events.length, "audit events")
+console.log("seeded", rows.length + cjcRows.length, "documents,", events.length, "audit events")

@@ -9,10 +9,11 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
-import { docTypes } from "@/lib/doc-types"
+import type { Department } from "@/lib/departments"
 
 
-export function UploadDialog() {
+export function UploadDialog({ dept }: { dept: Department }) {
+  const docTypes = dept.docTypes
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
@@ -30,7 +31,9 @@ export function UploadDialog() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...Object.fromEntries(form),
+          docType: form.get("docType"),
+          restricted: form.get("restricted"),
+          metadata: Object.fromEntries(dept.fields.map((f) => [f.key, form.get(f.key)])),
           filename: file.name,
           contentType: file.type,
           sizeBytes: file.size,
@@ -82,7 +85,7 @@ export function UploadDialog() {
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="docType">Document type</Label>
-            <Select name="docType" defaultValue="deed" items={docTypes}>
+            <Select name="docType" defaultValue={docTypes[0]!.value} items={docTypes}>
               <SelectTrigger id="docType" className="w-full">
                 <SelectValue />
               </SelectTrigger>
@@ -93,24 +96,25 @@ export function UploadDialog() {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="instrumentNumber">Instrument number</Label>
-            <Input id="instrumentNumber" name="instrumentNumber" required />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="book">Book</Label>
-              <Input id="book" name="book" />
+          {dept.fields.map((f) => (
+            <div key={f.key} className="flex flex-col gap-2">
+              <Label htmlFor={f.key}>{f.label}</Label>
+              {f.type === "select" ? (
+                <Select name={f.key} defaultValue={f.options![0]} items={f.options!.map((o) => ({ value: o, label: o }))}>
+                  <SelectTrigger id={f.key} className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {f.options!.map((o) => (
+                      <SelectItem key={o} value={o}>{o}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input id={f.key} name={f.key} type={f.type} required={f.required} />
+              )}
             </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="page">Page</Label>
-              <Input id="page" name="page" type="number" />
-            </div>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="recordedDate">Date recorded</Label>
-            <Input id="recordedDate" name="recordedDate" type="date" />
-          </div>
+          ))}
           <div className="flex items-center gap-2">
             <Checkbox id="restricted" name="restricted" />
             <Label htmlFor="restricted">Restrict to admins</Label>

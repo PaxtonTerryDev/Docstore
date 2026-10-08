@@ -3,7 +3,8 @@ import { Clock, Files, HardDrive, Search, UserRound, FileSearch } from "lucide-r
 import { audit } from "@/lib/audit"
 import { visibleTo } from "@/lib/access"
 import { requireUser } from "@/lib/session"
-import { docTypes, formatDate, formatSize, typeInfo } from "@/lib/doc-types"
+import { formatSize } from "@/lib/doc-types"
+import { fieldValue, getDepartment, typeLabel } from "@/lib/departments"
 import { and, db, desc, documents, eq, ilike, sqlTag } from "@workspace/db"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
@@ -17,8 +18,6 @@ import { TablePagination } from "@/components/table-pagination"
 import { PAGE_SIZE, parsePage } from "@/lib/pagination"
 import { UploadDialog } from "@/components/upload-dialog"
 
-const typeItems = [{ value: "", label: "All types" }, ...docTypes]
-
 export default async function Page({
   searchParams,
 }: {
@@ -27,12 +26,16 @@ export default async function Page({
   const user = await requireUser()
   const { q, type, page: pageParam } = await searchParams
   const page = parsePage(pageParam)
+  const dept = getDepartment(user.department)
+  const idField = dept.fields.find((f) => f.key === dept.idField)!
+  const tableFields = dept.fields.filter((f) => f.table)
+  const typeItems = [{ value: "", label: "All types" }, ...dept.docTypes]
   if (q || type) {
-    await audit(user.id, "search", undefined, [q && `instrument "${q}"`, type && `type ${type}`].filter(Boolean).join(", "))
+    await audit(user.id, "search", undefined, [q && `${idField.label.toLowerCase()} "${q}"`, type && `type ${type}`].filter(Boolean).join(", "))
   }
 
   const ready = and(eq(documents.status, "ready"), visibleTo(user))
-  const filter = and(ready, q ? ilike(documents.instrumentNumber, `%${q}%`) : undefined, type ? eq(documents.docType, type) : undefined)
+  const filter = and(ready, q ? ilike(sqlTag`${documents.metadata}->>${dept.idField}`, `%${q}%`) : undefined, type ? eq(documents.docType, type) : undefined)
   const [rows, [matched], [totals], byType] = await Promise.all([
     db
       .select()
@@ -71,9 +74,9 @@ export default async function Page({
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-3xl font-semibold">Welcome back, {user.name.split(" ")[0]}</h1>
-          <p className="mt-1 text-lg text-muted-foreground">Find a recorded document, or add a new one.</p>
+          {/*<p className="mt-1 text-lg text-muted-foreground">Find a recorded document, or add a new one.</p>*/}
         </div>
-        <UploadDialog />
+        <UploadDialog dept={dept} />
       </div>
 
       <section aria-label="Summary" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -96,9 +99,9 @@ export default async function Page({
 
       <Card aria-label="Search">
         <CardContent className="flex flex-col gap-4">
-          <SearchForm q={q} type={type} types={typeItems} />
+          <SearchForm q={q} type={type} types={typeItems} label={idField.label} />
           <div className="flex flex-wrap gap-2" aria-label="Browse by type">
-            {docTypes.map((t) => (
+            {dept.docTypes.map((t) => (
               <Badge
                 key={t.value}
                 variant={type === t.value ? "default" : "outline"}
@@ -121,7 +124,7 @@ export default async function Page({
           <div className="flex flex-col items-center gap-3 p-14 text-center">
             <FileSearch className="size-14 text-muted-foreground" aria-hidden />
             <p className="text-xl font-medium">No documents found</p>
-            <p className="text-base text-muted-foreground">Check the instrument number, or try a different document type.</p>
+            <p className="text-base text-muted-foreground">Check the {idField.label.toLowerCase()}, or try a different document type.</p>
             <Link href="/" className="text-base font-medium text-primary underline underline-offset-4">
               Show all documents
             </Link>
@@ -130,29 +133,28 @@ export default async function Page({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Instrument</TableHead>
                 <TableHead>Type</TableHead>
-                <TableHead>Book / Page</TableHead>
-                <TableHead>Recorded</TableHead>
+                {tableFields.map((f) => (
+                  <TableHead key={f.key}>{f.label}</TableHead>
+                ))}
                 <TableHead><span className="sr-only">Open</span></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {rows.map((d) => {
-                const t = typeInfo(d.docType)
                 return (
                   <TableRow key={d.id}>
-                    <TableCell className="font-mono font-medium">{d.instrumentNumber}</TableCell>
                     <TableCell>
-                      <Badge variant="secondary">{t.label}</Badge>
+                      <Badge variant="secondary">{typeLabel(dept, d.docType)}</Badge>
                       {d.restricted && <Badge variant="outline" className="ml-2">Restricted</Badge>}
                     </TableCell>
-                    <TableCell>
-                      {d.book ?? "—"} / {d.page ?? "—"}
-                    </TableCell>
-                    <TableCell>{formatDate(d.recordedDate)}</TableCell>
+                    {tableFields.map((f) => (
+                      <TableCell key={f.key} className={f.key === dept.idField ? "font-mono font-medium" : undefined}>
+                        {fieldValue(f, d.metadata[f.key])}
+                      </TableCell>
+                    ))}
                     <TableCell className="text-right">
-                      <Button variant="outline" nativeButton={false} render={<Link href={`/documents/${d.id}`} aria-label={`Open document ${d.instrumentNumber}`} />}>
+                      <Button variant="outline" nativeButton={false} render={<Link href={`/documents/${d.id}`} aria-label={`Open document ${d.metadata[dept.idField]}`} />}>
                         Open
                       </Button>
                     </TableCell>
