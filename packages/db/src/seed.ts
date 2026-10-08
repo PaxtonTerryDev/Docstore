@@ -38,7 +38,7 @@ const [admin, user, cjcUser] = await db
   .values([
     { email: "admin@docstore.local", name: "Alex Admin", role: "admin", passwordHash: hashPassword("admin123") },
     { email: "user@docstore.local", name: "Uma User", role: "user", passwordHash: hashPassword("user123") },
-    { email: "cjc@docstore.local", name: "Casey CJC", department: "cjc", passwordHash: hashPassword("cjc123") },
+    { email: "cjc@docstore.local", name: "Casey CJC", role: "admin", department: "cjc", passwordHash: hashPassword("cjc123") },
   ])
   .returning()
 

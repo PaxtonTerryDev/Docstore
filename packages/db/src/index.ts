@@ -7,4 +7,4 @@ export { hashPassword, verifyPassword } from "./password"
 
 export const sql = postgres(process.env.DATABASE_URL!)
 export const db = drizzle(sql, { schema })
-export { eq, and, ilike, desc, sql as sqlTag } from "drizzle-orm"
+export { eq, and, ilike, inArray, desc, sql as sqlTag } from "drizzle-orm"

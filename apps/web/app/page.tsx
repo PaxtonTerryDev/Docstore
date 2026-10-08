@@ -5,7 +5,7 @@ import { visibleTo } from "@/lib/access"
 import { requireUser } from "@/lib/session"
 import { formatSize } from "@/lib/doc-types"
 import { fieldValue, getDepartment, typeLabel } from "@/lib/departments"
-import { and, db, desc, documents, eq, ilike, sqlTag } from "@workspace/db"
+import { and, db, desc, documents, eq, ilike, inArray, sqlTag } from "@workspace/db"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card"
@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@workspace/ui/components/table"
 import { SearchForm } from "@/components/search-form"
 import { TablePagination } from "@/components/table-pagination"
-import { PAGE_SIZE, parsePage } from "@/lib/pagination"
+import { PAGE_SIZE, pageHref, parsePage } from "@/lib/pagination"
 import { UploadDialog } from "@/components/upload-dialog"
 
 export default async function Page({
@@ -29,13 +29,14 @@ export default async function Page({
   const dept = getDepartment(user.department)
   const idField = dept.fields.find((f) => f.key === dept.idField)!
   const tableFields = dept.fields.filter((f) => f.table)
-  const typeItems = [{ value: "", label: "All types" }, ...dept.docTypes]
+  const selected = (type ?? "").split(",").filter(Boolean)
+  const toggle = (v: string) => (selected.includes(v) ? selected.filter((s) => s !== v) : [...selected, v]).join(",")
   if (q || type) {
     await audit(user.id, "search", undefined, [q && `${idField.label.toLowerCase()} "${q}"`, type && `type ${type}`].filter(Boolean).join(", "))
   }
 
   const ready = and(eq(documents.status, "ready"), visibleTo(user))
-  const filter = and(ready, q ? ilike(sqlTag`${documents.metadata}->>${dept.idField}`, `%${q}%`) : undefined, type ? eq(documents.docType, type) : undefined)
+  const filter = and(ready, q ? ilike(sqlTag`${documents.metadata}->>${dept.idField}`, `%${q}%`) : undefined, selected.length ? inArray(documents.docType, selected) : undefined)
   const [rows, [matched], [totals], byType] = await Promise.all([
     db
       .select()
@@ -79,7 +80,7 @@ export default async function Page({
         {user.role === "admin" && <UploadDialog dept={dept} />}
       </div>
 
-      <section aria-label="Summary" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {user.role === "admin" && <section aria-label="Summary" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((s) => (
           <Card
             key={s.label}
@@ -95,17 +96,17 @@ export default async function Page({
             </CardContent>
           </Card>
         ))}
-      </section>
+      </section>}
 
       <Card aria-label="Search">
         <CardContent className="flex flex-col gap-4">
-          <SearchForm q={q} type={type} types={typeItems} label={idField.label} />
+          <SearchForm q={q} type={type} label={idField.label} />
           <div className="flex flex-wrap gap-2" aria-label="Browse by type">
             {dept.docTypes.map((t) => (
               <Badge
                 key={t.value}
-                variant={type === t.value ? "default" : "outline"}
-                render={<Link href={`/?type=${t.value}`} />}
+                variant={selected.includes(t.value) ? "default" : "outline"}
+                render={<Link href={pageHref("/", { q, type: toggle(t.value) }, 1)} />}
               >
                 {t.label} · {counts.get(t.value) ?? 0}
               </Badge>
