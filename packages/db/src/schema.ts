@@ -1,5 +1,6 @@
 import {
   bigint,
+  boolean,
   date,
   integer,
   pgTable,
@@ -41,6 +42,7 @@ export const documents = pgTable("documents", {
   status: text("status", { enum: ["pending", "ready"] })
     .notNull()
     .default("pending"),
+  restricted: boolean("restricted").notNull().default(false),
   uploadedBy: uuid("uploaded_by").references(() => users.id),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 })

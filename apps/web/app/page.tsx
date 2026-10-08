@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Clock, Files, HardDrive, Search, UserRound, FileSearch } from "lucide-react"
 import { audit } from "@/lib/audit"
+import { visibleTo } from "@/lib/access"
 import { requireUser } from "@/lib/session"
 import { docTypes, formatDate, formatSize, typeInfo } from "@/lib/doc-types"
 import { and, db, desc, documents, eq, ilike, sqlTag } from "@workspace/db"
@@ -30,7 +31,7 @@ export default async function Page({
     await audit(user.id, "search", undefined, [q && `instrument "${q}"`, type && `type ${type}`].filter(Boolean).join(", "))
   }
 
-  const ready = eq(documents.status, "ready")
+  const ready = and(eq(documents.status, "ready"), visibleTo(user))
   const filter = and(ready, q ? ilike(documents.instrumentNumber, `%${q}%`) : undefined, type ? eq(documents.docType, type) : undefined)
   const [rows, [matched], [totals], byType] = await Promise.all([
     db
@@ -144,6 +145,7 @@ export default async function Page({
                     <TableCell className="font-mono font-medium">{d.instrumentNumber}</TableCell>
                     <TableCell>
                       <Badge variant="secondary">{t.label}</Badge>
+                      {d.restricted && <Badge variant="outline" className="ml-2">Restricted</Badge>}
                     </TableCell>
                     <TableCell>
                       {d.book ?? "—"} / {d.page ?? "—"}

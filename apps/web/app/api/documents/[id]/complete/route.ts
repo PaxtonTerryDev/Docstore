@@ -1,4 +1,5 @@
 import { audit } from "@/lib/audit"
+import { canView } from "@/lib/access"
 import { getUser } from "@/lib/session"
 import { db, documents, eq } from "@workspace/db"
 import { headObject } from "@workspace/storage"
@@ -8,7 +9,7 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
   if (!user) return Response.json({ error: "unauthorized" }, { status: 401 })
   const { id } = await ctx.params
   const [doc] = await db.select().from(documents).where(eq(documents.id, id))
-  if (!doc) return Response.json({ error: "not found" }, { status: 404 })
+  if (!doc || !canView(user, doc)) return Response.json({ error: "not found" }, { status: 404 })
 
   const head = await headObject(doc.objectKey).catch(() => null)
   if (!head) return Response.json({ error: "object missing" }, { status: 400 })

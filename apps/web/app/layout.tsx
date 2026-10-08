@@ -25,10 +25,10 @@ export default function RootLayout({
       suppressHydrationWarning
       className={cn("antialiased", fontMono.variable, "font-sans", inter.variable, notoSerifHeading.variable)}
     >
-      <body>
+      <body className="flex h-svh flex-col">
         <ThemeProvider>
           <Header />
-          {children}
+          <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
         </ThemeProvider>
       </body>
     </html>

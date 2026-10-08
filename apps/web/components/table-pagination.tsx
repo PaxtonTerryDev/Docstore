@@ -17,7 +17,7 @@ export function TablePagination({
   const off = "pointer-events-none opacity-50"
 
   return (
-    <Pagination className="border-t p-3">
+    <Pagination className="border-t px-4 py-3">
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious

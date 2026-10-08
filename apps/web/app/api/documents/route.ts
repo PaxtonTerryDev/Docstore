@@ -21,6 +21,7 @@ export async function POST(req: Request) {
     book: body.book || null,
     page: Number.parseInt(body.page) || null,
     recordedDate: body.recordedDate || null,
+    restricted: Boolean(body.restricted),
     uploadedBy: uploader.id,
   })
 

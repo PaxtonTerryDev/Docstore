@@ -15,6 +15,13 @@
       "when": 1791483101986,
       "tag": "0001_mixed_salo",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791486449770,
+      "tag": "0002_lovely_goblin_queen",
+      "breakpoints": true
     }
   ]
 }

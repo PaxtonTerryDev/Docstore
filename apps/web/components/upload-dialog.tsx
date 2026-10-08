@@ -4,6 +4,7 @@ import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { CheckCircle2, Loader2, Upload } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
+import { Checkbox } from "@workspace/ui/components/checkbox"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@workspace/ui/components/dialog"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
@@ -109,6 +110,10 @@ export function UploadDialog() {
           <div className="flex flex-col gap-2">
             <Label htmlFor="recordedDate">Date recorded</Label>
             <Input id="recordedDate" name="recordedDate" type="date" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Checkbox id="restricted" name="restricted" />
+            <Label htmlFor="restricted">Restrict to admins</Label>
           </div>
           <div role="status" aria-live="polite" className="min-h-7 text-base">
             {state === "busy" && (

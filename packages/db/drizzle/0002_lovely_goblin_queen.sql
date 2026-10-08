@@ -1,0 +1,1 @@
+ALTER TABLE "documents" ADD COLUMN "restricted" boolean DEFAULT false NOT NULL;
