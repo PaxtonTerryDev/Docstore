@@ -11,6 +11,9 @@ import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@workspace/ui/components/table"
+import { SearchForm } from "@/components/search-form"
+import { TablePagination } from "@/components/table-pagination"
+import { PAGE_SIZE, parsePage } from "@/lib/pagination"
 import { UploadDialog } from "@/components/upload-dialog"
 
 const typeItems = [{ value: "", label: "All types" }, ...docTypes]
@@ -18,22 +21,26 @@ const typeItems = [{ value: "", label: "All types" }, ...docTypes]
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; type?: string }>
+  searchParams: Promise<{ q?: string; type?: string; page?: string }>
 }) {
   const user = await requireUser()
-  const { q, type } = await searchParams
+  const { q, type, page: pageParam } = await searchParams
+  const page = parsePage(pageParam)
   if (q || type) {
     await audit(user.id, "search", undefined, [q && `instrument "${q}"`, type && `type ${type}`].filter(Boolean).join(", "))
   }
 
   const ready = eq(documents.status, "ready")
-  const [rows, [totals], byType] = await Promise.all([
+  const filter = and(ready, q ? ilike(documents.instrumentNumber, `%${q}%`) : undefined, type ? eq(documents.docType, type) : undefined)
+  const [rows, [matched], [totals], byType] = await Promise.all([
     db
       .select()
       .from(documents)
-      .where(and(ready, q ? ilike(documents.instrumentNumber, `%${q}%`) : undefined, type ? eq(documents.docType, type) : undefined))
+      .where(filter)
       .orderBy(desc(documents.createdAt))
-      .limit(100),
+      .limit(PAGE_SIZE)
+      .offset((page - 1) * PAGE_SIZE),
+    db.select({ n: sqlTag<number>`count(*)::int` }).from(documents).where(filter),
     db
       .select({
         total: sqlTag<number>`count(*)::int`,
@@ -88,35 +95,7 @@ export default async function Page({
 
       <Card aria-label="Search">
         <CardContent className="flex flex-col gap-4">
-          <form className="flex flex-wrap items-end gap-4">
-            <div className="flex min-w-64 flex-1 flex-col gap-2">
-              <Label htmlFor="q">Instrument number</Label>
-              <Input id="q" name="q" defaultValue={q} placeholder="For example 2026000107" />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="type">Document type</Label>
-              <Select name="type" defaultValue={type ?? ""} items={typeItems}>
-                <SelectTrigger id="type" className="w-48">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {typeItems.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>
-                      {t.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <Button type="submit">
-              <Search /> Search
-            </Button>
-            {(q || type) && (
-              <Link href="/" className="inline-flex h-8 items-center px-2 font-medium text-primary underline underline-offset-4">
-                Clear search
-              </Link>
-            )}
-          </form>
+          <SearchForm q={q} type={type} types={typeItems} />
           <div className="flex flex-wrap gap-2" aria-label="Browse by type">
             {docTypes.map((t) => (
               <Badge
@@ -134,7 +113,7 @@ export default async function Page({
       <Card aria-label="Documents">
         <CardHeader className="border-b">
           <CardTitle className="text-xl" aria-live="polite">
-            {q || type ? `${rows.length} ${rows.length === 1 ? "result" : "results"}` : "Recently added"}
+            {q || type ? `${matched!.n} ${matched!.n === 1 ? "result" : "results"}` : "Recently added"}
           </CardTitle>
         </CardHeader>
         {rows.length === 0 ? (
@@ -181,6 +160,7 @@ export default async function Page({
             </TableBody>
           </Table>
         )}
+        <TablePagination path="/" params={{ q, type }} page={page} total={matched!.n} />
       </Card>
     </main>
   )
