@@ -8,7 +8,7 @@ export function LogoutButton() {
   return (
     <Button
       variant="ghost"
-      className="hover:bg-white/10 hover:text-white"
+      className="hover:bg-brand-foreground/10 hover:text-brand-foreground"
       onClick={async () => {
         await fetch("/api/logout", { method: "POST" })
         router.push("/login")

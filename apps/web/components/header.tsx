@@ -7,8 +7,8 @@ export async function Header() {
   if (!user) return null
 
   return (
-    <header className="bg-[oklch(0.36_0.03_255)] text-white">
-      <div className="bg-[oklch(0.3_0.03_255)] py-1 text-[11px] font-semibold">
+    <header className="bg-brand text-brand-foreground">
+      <div className="bg-black/20 py-1 text-[11px] font-semibold">
         <div className="mx-auto max-w-6xl px-6 sm:px-8">An Official Website of Utah County Government</div>
       </div>
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-3 sm:px-8">
@@ -21,7 +21,7 @@ export async function Header() {
               Activity log
             </Link>
           )}
-          <span className="text-white/70">{user.name}</span>
+          <span className="text-brand-foreground/70">{user.name}</span>
           <LogoutButton />
         </nav>
       </div>
