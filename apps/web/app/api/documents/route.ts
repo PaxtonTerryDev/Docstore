@@ -8,6 +8,7 @@ export async function POST(req: Request) {
   const body = await req.json()
   const uploader = await getUser()
   if (!uploader) return Response.json({ error: "unauthorized" }, { status: 401 })
+  if (uploader.role !== "admin") return Response.json({ error: "forbidden" }, { status: 403 })
   const dept = getDepartment(uploader.department)
   const id = randomUUID()
   const objectKey = `${id}/${body.filename}`

@@ -74,9 +74,9 @@ export default async function Page({
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-heading text-3xl font-semibold">Welcome back, {user.name.split(" ")[0]}</h1>
-          {/*<p className="mt-1 text-lg text-muted-foreground">Find a recorded document, or add a new one.</p>*/}
+          {/*<p className="mt-1 text-lg text-muted-foreground">{user.role === "admin" ? "Find a recorded document, or add a new one." : "Find a recorded document."}</p>*/}
         </div>
-        <UploadDialog dept={dept} />
+        {user.role === "admin" && <UploadDialog dept={dept} />}
       </div>
 
       <section aria-label="Summary" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

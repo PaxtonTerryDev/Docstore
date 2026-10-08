@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { getUser } from "@/lib/session"
 import { LogoutButton } from "@/components/logout-button"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export async function Header() {
   const user = await getUser()
@@ -22,6 +23,7 @@ export async function Header() {
             </Link>
           )}
           <span className="text-brand-foreground/70">{user.name}</span>
+          <ThemeToggle />
           <LogoutButton />
         </nav>
       </div>
