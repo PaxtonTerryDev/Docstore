@@ -87,7 +87,7 @@ const rows = await Promise.all(
     ])
     const filename = `${docType}-${instrument}.pdf`
     const objectKey = `seed/${instrument}/${filename}`
-    await putObject(objectKey, body, "application/pdf")
+    await putObject("recorder", objectKey, body, "application/pdf")
     return {
       filename,
       contentType: "application/pdf",
@@ -129,7 +129,7 @@ const cjcRows = await Promise.all(
     ])
     const filename = `${docType}-${caseNumber}.pdf`
     const objectKey = `seed/${caseNumber}/${filename}`
-    await putObject(objectKey, body, "application/pdf")
+    await putObject("cjc", objectKey, body, "application/pdf")
     return {
       filename,
       contentType: "application/pdf",

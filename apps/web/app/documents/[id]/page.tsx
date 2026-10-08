@@ -24,7 +24,7 @@ export default async function DocumentPage({
   if (!doc || !canView(user, doc)) notFound()
 
   await audit(user.id, "view", id)
-  const url = await presignGet(doc.objectKey)
+  const url = await presignGet(doc.department, doc.objectKey)
   const isPdf = doc.contentType === "application/pdf"
   const isImage = doc.contentType.startsWith("image/")
   const dept = getDepartment(doc.department)

@@ -11,7 +11,7 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
   const [doc] = await db.select().from(documents).where(eq(documents.id, id))
   if (!doc || !canView(user, doc)) return Response.json({ error: "not found" }, { status: 404 })
 
-  const head = await headObject(doc.objectKey).catch(() => null)
+  const head = await headObject(doc.department, doc.objectKey).catch(() => null)
   if (!head) return Response.json({ error: "object missing" }, { status: 400 })
 
   await db

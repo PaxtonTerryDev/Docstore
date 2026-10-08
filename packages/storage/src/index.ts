@@ -7,57 +7,63 @@ import {
 } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 
-const bucket = process.env.S3_BUCKET ?? "docstore"
+const bucketFor = (dept: string) => `docstore-${dept}`
 
-function createClient(endpoint: string) {
+function createClient(endpoint: string, dept: string) {
   return new S3Client({
     endpoint,
     region: process.env.S3_REGION ?? "us-east-1",
     forcePathStyle: process.env.S3_FORCE_PATH_STYLE !== "false",
     credentials: {
-      accessKeyId: process.env.S3_ACCESS_KEY!,
-      secretAccessKey: process.env.S3_SECRET_KEY!,
+      accessKeyId: `${dept}-app`,
+      secretAccessKey: `${dept}-app-secret`,
     },
   })
 }
 
-const internal = createClient(process.env.S3_ENDPOINT!)
-const external = createClient(
-  process.env.S3_PUBLIC_ENDPOINT ?? process.env.S3_ENDPOINT!
-)
+const clients = new Map<string, S3Client>()
+function client(dept: string, external = false) {
+  const endpoint = external
+    ? (process.env.S3_PUBLIC_ENDPOINT ?? process.env.S3_ENDPOINT!)
+    : process.env.S3_ENDPOINT!
+  const k = `${dept}:${external}`
+  if (!clients.has(k)) clients.set(k, createClient(endpoint, dept))
+  return clients.get(k)!
+}
 
-export const putObject = (key: string, body: Uint8Array, contentType?: string) =>
-  internal.send(
+export const putObject = (dept: string, key: string, body: Uint8Array, contentType?: string) =>
+  client(dept).send(
     new PutObjectCommand({
-      Bucket: bucket,
+      Bucket: bucketFor(dept),
       Key: key,
       Body: body,
       ContentType: contentType,
     })
   )
 
-export const headObject = (key: string) =>
-  internal.send(new HeadObjectCommand({ Bucket: bucket, Key: key }))
+export const headObject = (dept: string, key: string) =>
+  client(dept).send(new HeadObjectCommand({ Bucket: bucketFor(dept), Key: key }))
 
-export const deleteObject = (key: string) =>
-  internal.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }))
+export const deleteObject = (dept: string, key: string) =>
+  client(dept).send(new DeleteObjectCommand({ Bucket: bucketFor(dept), Key: key }))
 
-export const presignPut = (key: string, contentType?: string, expiresIn = 300) =>
+export const presignPut = (dept: string, key: string, contentType?: string, expiresIn = 300) =>
   getSignedUrl(
-    external,
-    new PutObjectCommand({ Bucket: bucket, Key: key, ContentType: contentType }),
+    client(dept, true),
+    new PutObjectCommand({ Bucket: bucketFor(dept), Key: key, ContentType: contentType }),
     { expiresIn }
   )
 
 export const presignGet = (
+  dept: string,
   key: string,
   opts: { filename?: string; disposition?: "inline" | "attachment" } = {},
   expiresIn = 60
 ) =>
   getSignedUrl(
-    external,
+    client(dept, true),
     new GetObjectCommand({
-      Bucket: bucket,
+      Bucket: bucketFor(dept),
       Key: key,
       ResponseContentDisposition: opts.filename
         ? `${opts.disposition ?? "inline"}; filename="${opts.filename}"`

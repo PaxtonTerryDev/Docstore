@@ -26,6 +26,6 @@ export async function POST(req: Request) {
     uploadedBy: uploader.id,
   })
 
-  const uploadUrl = await presignPut(objectKey, body.contentType)
+  const uploadUrl = await presignPut(dept.id, objectKey, body.contentType)
   return Response.json({ id, uploadUrl })
 }

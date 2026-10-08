@@ -12,6 +12,6 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   if (!doc || !canView(user, doc)) return Response.json({ error: "not found" }, { status: 404 })
 
   await audit(user.id, "download", id)
-  const url = await presignGet(doc.objectKey, { filename: doc.filename, disposition: "attachment" })
+  const url = await presignGet(doc.department, doc.objectKey, { filename: doc.filename, disposition: "attachment" })
   return Response.redirect(url, 302)
 }
