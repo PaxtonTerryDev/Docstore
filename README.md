@@ -6,14 +6,13 @@ Document upload and storage proof of concept. Next.js + Postgres + RustFS (S3-co
 
 ```bash
 cp .env.example .env
-npm install
-docker compose up -d
-npm run migrate -w @workspace/db
-npm run seed -w @workspace/db
-npm run dev
+make setup
+make dev
 ```
 
 Open http://localhost:3000
+
+Other targets: `make up`, `make down`, `make migrate`, `make seed`, `make build`, `make lint`, `make typecheck`.
 
 | Account | Email | Password |
 | --- | --- | --- |
